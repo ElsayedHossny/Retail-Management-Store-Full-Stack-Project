@@ -17,7 +17,7 @@ export default function Layout() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand">
-          <div className="brand-mark">Store Managment</div>
+          <div className="brand-mark">FreshFood Managment</div>
           <div className="brand-sub">Stockroom &amp; Sales</div>
         </div>
 
