@@ -33,7 +33,14 @@ app.use((req, _res, next) => {
 app.post("/auth/signUp", async (req, res) => {
   const { name, email, password, age, gender } = req.body;
 
-  if (!name || !email || !password || age === undefined || age === "" || !gender) {
+  if (
+    !name ||
+    !email ||
+    !password ||
+    age === undefined ||
+    age === "" ||
+    !gender
+  ) {
     return res.status(400).json({
       message: "name, email, password, age, and gender are required",
       status: false,
@@ -42,13 +49,7 @@ app.post("/auth/signUp", async (req, res) => {
 
   try {
     const insertQuery = `insert into Users (name, email, password, age, gender) values (?,?,?,?,?)`;
-    await connection.execute(insertQuery, [
-      name,
-      email,
-      password,
-      age,
-      gender,
-    ]);
+    await connection.execute(insertQuery, [name, email, password, age, gender]);
 
     console.log("Sucess Add New User");
     res.status(201).json({
@@ -58,7 +59,9 @@ app.post("/auth/signUp", async (req, res) => {
     });
   } catch (error) {
     console.log("Error :: ", error);
-    res.status(500).json({ message: "Not add User", status: false, Error: error.message });
+    res
+      .status(500)
+      .json({ message: "Not add User", status: false, Error: error.message });
   }
 });
 
