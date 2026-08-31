@@ -1,5 +1,5 @@
 // src/components/Layout.jsx
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const links = [
@@ -12,6 +12,12 @@ const links = [
 
 export default function Layout() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    logout();
+    navigate("/login", { replace: true });
+  }
 
   return (
     <div className="app-shell">
@@ -40,8 +46,8 @@ export default function Layout() {
 
         <div className="sidebar-footer">
           <div className="user-chip">
-            <span>{user?.username || user?.email || "store_manager"}</span>
-            <button className="logout-btn" onClick={logout}>
+            <span>{user?.name || user?.email || "store_manager"}</span>
+            <button className="logout-btn" onClick={handleLogout}>
               Sign out
             </button>
           </div>

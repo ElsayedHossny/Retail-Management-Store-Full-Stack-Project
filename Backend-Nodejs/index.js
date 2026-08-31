@@ -28,6 +28,70 @@ app.use((req, _res, next) => {
   }
   next();
 });
+
+//================================================== SignUp ========================================
+app.post("/auth/signUp", async (req, res) => {
+  const { name, email, password, age, gender } = req.body;
+
+  if (!name || !email || !password || age === undefined || age === "" || !gender) {
+    return res.status(400).json({
+      message: "name, email, password, age, and gender are required",
+      status: false,
+    });
+  }
+
+  try {
+    const insertQuery = `insert into Users (name, email, password, age, gender) values (?,?,?,?,?)`;
+    await connection.execute(insertQuery, [
+      name,
+      email,
+      password,
+      age,
+      gender,
+    ]);
+
+    console.log("Sucess Add New User");
+    res.status(201).json({
+      message: "Sucess Add New User",
+      status: true,
+      User: { name, email },
+    });
+  } catch (error) {
+    console.log("Error :: ", error);
+    res.status(500).json({ message: "Not add User", status: false, Error: error.message });
+  }
+});
+
+//================================================== SignIn ========================================
+
+app.post("/auth/signIn", async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({
+      message: "email and password are required",
+      status: false,
+    });
+  }
+
+  try {
+    const selectQuery = `select name, email from Users where email=? && password=?`;
+    const [result] = await connection.execute(selectQuery, [email, password]);
+    if (!result.length)
+      return res
+        .status(401)
+        .json({ message: "User not define", status: false });
+
+    console.log("result :::: ", result);
+    res
+      .status(200)
+      .json({ message: "Sucess Login", status: true, User: result[0] });
+  } catch (error) {
+    console.log("Error :: ", error.message);
+    res.status(500).json({ message: "Error in Execute ", status: false });
+  }
+});
+
 //========================================================== Suppliers ==============================================
 
 app.get("/suppliers", async (req, res, next) => {

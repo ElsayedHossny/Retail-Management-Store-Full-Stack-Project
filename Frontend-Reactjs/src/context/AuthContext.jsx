@@ -11,8 +11,6 @@ export function AuthProvider({ children }) {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    // We don't have a "/me" endpoint guaranteed to exist, so we simply trust
-    // a stored token until an API call comes back 401/403 (handled in pages).
     const storedUser = localStorage.getItem('retail_user');
     if (storedUser) {
       try {
@@ -24,11 +22,10 @@ export function AuthProvider({ children }) {
     setChecking(false);
   }, []);
 
-  function persistSession(newToken, newUser) {
-    if (newToken) {
-      localStorage.setItem('retail_token', newToken);
-      setToken(newToken);
-    }
+  function persistSession(newUser) {
+    const sessionToken = 'session';
+    localStorage.setItem('retail_token', sessionToken);
+    setToken(sessionToken);
     if (newUser) {
       localStorage.setItem('retail_user', JSON.stringify(newUser));
       setUser(newUser);
@@ -41,27 +38,21 @@ export function AuthProvider({ children }) {
       [AUTH_FIELDS.password]: password,
     };
     const { data } = await client.post(AUTH_ENDPOINTS.login, payload);
-    const returnedToken = data.token || data.accessToken;
-    const returnedUser = data.user || { [AUTH_FIELDS.identifier]: identifier };
-    if (!returnedToken) {
-      throw new Error('Login succeeded but no token was returned by the API — check AUTH_ENDPOINTS in src/api/config.js');
+    if (data.status === false) {
+      throw new Error(data.message || 'Could not sign in');
     }
-    persistSession(returnedToken, returnedUser);
+    const returnedUser = data.User || data.user || { [AUTH_FIELDS.identifier]: identifier };
+    persistSession(returnedUser);
     return returnedUser;
   }
 
-  async function register(identifier, password) {
-    const payload = {
-      [AUTH_FIELDS.identifier]: identifier,
-      [AUTH_FIELDS.password]: password,
-    };
+  async function register({ name, email, password, age, gender }) {
+    const payload = { name, email, password, age, gender };
     const { data } = await client.post(AUTH_ENDPOINTS.register, payload);
-    // Some backends log the user in immediately on register, some don't.
-    if (data.token) {
-      persistSession(data.token, data.user || { [AUTH_FIELDS.identifier]: identifier });
-      return data.user;
+    if (data.status === false) {
+      throw new Error(data.message || 'Could not register');
     }
-    return null; // caller should redirect to login
+    return null;
   }
 
   function logout() {
@@ -74,7 +65,7 @@ export function AuthProvider({ children }) {
   const value = {
     user,
     token,
-    isAuthenticated: Boolean(token),
+    isAuthenticated: Boolean(user),
     checking,
     login,
     register,

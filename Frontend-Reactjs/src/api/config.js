@@ -7,13 +7,11 @@
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
 export const AUTH_ENDPOINTS = {
-  login: '/auth/login', // expects { username, password } -> { token, user }
-  register: '/auth/register', // expects { username, password } -> { token, user } or { message }
+  login: '/auth/signIn',
+  register: '/auth/signUp',
 };
 
-// Field names sent to the login/register endpoints.
-// Change to { email: 'email', password: 'password' } etc. if your backend differs.
 export const AUTH_FIELDS = {
-  identifier: 'username',
+  identifier: 'email',
   password: 'password',
 };

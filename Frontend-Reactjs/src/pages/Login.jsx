@@ -1,25 +1,28 @@
 // src/pages/Login.jsx
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, isAuthenticated, checking } = useAuth();
   const navigate = useNavigate();
-  const [identifier, setIdentifier] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  if (checking) return <div className="loading-line">Checking session…</div>;
+  if (isAuthenticated) return <Navigate to="/" replace />;
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      await login(identifier, password);
+      await login(email, password);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Could not sign in');
+      setError(err.response?.data?.message || err.message || 'Could not sign in');
     } finally {
       setLoading(false);
     }
@@ -35,11 +38,12 @@ export default function Login() {
 
         <form onSubmit={handleSubmit}>
           <div className="field">
-            <label htmlFor="identifier">Username</label>
+            <label htmlFor="email">Email</label>
             <input
-              id="identifier"
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               autoFocus
               required
             />
